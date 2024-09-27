@@ -157,8 +157,9 @@ export exp_tag
 # Propagation delay box, then delay box (jittery trace) with inf buffer
 if [[ $attack_flag == true ]]; then
     echo "Running attack scenario"
-    mm-bbr-attack $attack_rate $queue_size $delay_budget --uplink-log="$uplink_log_path_delay_box" --attack-log="$attack_log_path" \
-        $SCRIPT_PATH/bottleneck_box.sh
+    mm-delay $delay_ms \
+            mm-bbr-attack $attack_rate $queue_size $delay_budget --uplink-log="$uplink_log_path_delay_box" --attack-log="$attack_log_path" \
+            $SCRIPT_PATH/bottleneck_box.sh
 
     # Move attack log
     if [[ -f $attack_log_path ]]; then
@@ -167,7 +168,6 @@ if [[ $attack_flag == true ]]; then
 else 
     echo "Running regular scenario"
     mm-delay $delay_ms \
-            mm-link \
             $delay_uplink_trace_file \
             $downlink_trace_file \
             --uplink-log="$uplink_log_path_delay_box" \
