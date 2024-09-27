@@ -23,6 +23,15 @@ RAMDISK_PATH=/mnt/ramdisk
 RAMDISK_DATA_PATH=$RAMDISK_PATH/$DATA_DIR
 mkdir -p $RAMDISK_DATA_PATH
 
+# Define the attack flag
+attack_flag=false
+
+# Check if the first argument is --attack
+if [[ $1 == "--attack" ]]; then
+    attack_flag=true
+    shift  # Shift parameters so $1 becomes pkts_per_ms and others
+fi
+
 pkts_per_ms=$1
 delay_ms=$2
 buf_size_bdp=$3
@@ -32,7 +41,15 @@ cbr_uplink_trace_file=$6
 downlink_trace_file=$7
 port=$8
 n_parallel=$9
-tbf_size_bdp=${10}
+#tbf_size_bdp=${10}
+
+#attack variables
+attack_rate=${11}       # Dynamic attack rate input
+queue_size=${12}        # Queue size for attack
+delay_budget=${13}      # Max allowable delay for attack
+
+# Parse the first argument for --attack
+attack_flag=${1:-}  # Check if --attack is provided, otherwise set empty
 
 is_genericcc=false
 if [[ $cca == genericcc_* ]]; then
@@ -51,12 +68,6 @@ fi
 bdp_bytes=$(echo "$MM_PKT_SIZE*$pkts_per_ms*2*$delay_ms" | bc)
 buf_size_bytes=$(echo "$buf_size_bdp*$bdp_bytes/1" | bc)
 exp_tag="rate[$pkts_per_ms]-delay[$delay_ms]-buf_size[$buf_size_bdp]-cca[$cca]"
-
-tbf_size_bytes=false
-if [[ $tbf_size_bdp != false ]]; then
-    tbf_size_bytes=$(echo "$tbf_size_bdp*$bdp_bytes/1" | bc)
-    exp_tag+="-tbf_size_bdp[$tbf_size_bdp]"
-fi
 
 iperf_log_path=$DATA_PATH/$exp_tag.json
 if [[ -f $iperf_log_path ]]; then
@@ -90,6 +101,12 @@ if [[ -f $genericcc_logfilepath ]]; then
     rm $genericcc_logfilepath
 fi
 
+#for attack logging
+attack_log_path=$RAMDISK_DATA_PATH/$exp_tag-attack.log
+if [[ -f $attack_log_path ]]; then
+    rm $attack_log_path
+fi
+
 # Start Server
 if [[ $is_genericcc == true ]]; then
     echo "Using genericCC"
@@ -103,25 +120,11 @@ fi
 echo "Started server: $server_pid"
 
 if [[ $log_dmesg == true ]]; then
-    # Start dmesg logging
-    # https://unix.stackexchange.com/questions/390184/dmesg-read-kernel-buffer-failed-permission-denied
-    # Run dmesg without sudo. Now we can have concurrent isolated experiments.
-    # Ideally we want to do `dmesg --follow-new`, some versions don't have that :(
+    # Start dmesg logging for kernel messages
     sudo dmesg --clear
     dmesg --level info --follow --notime 1> $dmesg_log_path 2>&1 &
     dmesg_pid=$!
     echo "Started dmesg logging with: $dmesg_pid"
-
-    # sudo -b dmesg -l info -W -t 1> $dmesg_log_path 2>&1
-    # echo "Started dmesg logging"
-    # # Due to -b flag, sudo immediately returns.
-    # # There is no way to obtain the child's pid.
-    # # (https://stackoverflow.com/questions/9315829/how-to-get-the-pid-of-command-running-with-sudo)
-    # # Faced issues without the -b flag as well.
-    # # (https://stackoverflow.com/questions/26109878/running-a-program-in-the-background-as-sudo)
-    # # We are then resorting to kill all dmesg processes.
-    # # This is not ideal on a shared machine.
-    # # Currently tests are in an isolated VM, so this is fine.
 fi
 
 # Start client (behind emulated delay and link)
@@ -149,28 +152,29 @@ export exp_tag
 # echo downlink_trace_file: $downlink_trace_file
 
 # Propagation delay box, then delay box (jittery trace) with inf buffer
-if [[ $tbf_size_bdp == false ]]; then
-    if [[ $log_uplink == true ]]; then
-        mm-delay $delay_ms \
-                    mm-link \
-                    $delay_uplink_trace_file \
-                    $downlink_trace_file \
-                    --uplink-log="$uplink_log_path_delay_box" \
-                    -- $SCRIPT_PATH/bottleneck_box.sh
-    else
-        mm-delay $delay_ms \
-                    mm-link \
-                    $delay_uplink_trace_file \
-                    $downlink_trace_file \
-                    -- $SCRIPT_PATH/bottleneck_box.sh
-    fi
+if [[ $attack_flag == true ]]; then
+    echo "Running attack scenario"
+    mm-bbr-attack $attack_rate $queue_size $delay_budget --uplink-log="$uplink_log_path_delay_box" --attack-log="$attack_log_path" \
+        $SCRIPT_PATH/bottleneck_box.sh
 
-    if [[ $log_uplink == true ]]; then
-        mv $uplink_log_path_delay_box $DATA_PATH
+    # Move attack log
+    if [[ -f $attack_log_path ]]; then
+        mv $attack_log_path $DATA_PATH
     fi
-else
-    echo "Not launching delay box as bottleneck is TBF only"
-    mm-delay $delay_ms $SCRIPT_PATH/bottleneck_box.sh
+else 
+    echo "Running regular scenario"
+    mm-delay $delay_ms \
+            mm-link \
+            $delay_uplink_trace_file \
+            $downlink_trace_file \
+            --uplink-log="$uplink_log_path_delay_box" \
+            -- $SCRIPT_PATH/bottleneck_box.sh
+
+fi
+
+# Move uplink log
+if [[ $log_uplink == true ]]; then
+    mv $uplink_log_path_delay_box $DATA_PATH
 fi
 
 echo "Sleeping"  # so that iperf and mahimahi have some time to gracefully cleanup any sockets etc.
