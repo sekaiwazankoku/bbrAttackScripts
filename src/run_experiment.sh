@@ -48,9 +48,6 @@ attack_rate=${11}       # Dynamic attack rate input
 queue_size=${12}        # Queue size for attack
 delay_budget=${13}      # Max allowable delay for attack
 
-# Parse the first argument for --attack
-attack_flag=${1:-}  # Check if --attack is provided, otherwise set empty
-
 #To check for parameter values:
 #echo "attack_flag: $attack_flag"
 #echo "pkts_per_ms: $pkts_per_ms"
