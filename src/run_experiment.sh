@@ -51,6 +51,12 @@ delay_budget=${13}      # Max allowable delay for attack
 # Parse the first argument for --attack
 attack_flag=${1:-}  # Check if --attack is provided, otherwise set empty
 
+#To check for parameter values:
+#echo "attack_flag: $attack_flag"
+#echo "pkts_per_ms: $pkts_per_ms"
+#echo "delay_ms: $delay_ms"
+# and so on for other parameters
+
 is_genericcc=false
 if [[ $cca == genericcc_* ]]; then
     is_genericcc=true
