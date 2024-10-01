@@ -20,6 +20,7 @@ EXPERIMENTS_PATH=$(realpath $SCRIPT_PATH/../)
 GENERICCC_PATH=$(realpath $EXPERIMENTS_PATH/../ccas/genericCC)
 
 RAMDISK_PATH=/mnt/ramdisk
+#DATA_PATH=" "
 RAMDISK_DATA_PATH=$RAMDISK_PATH/$DATA_DIR
 mkdir -p $RAMDISK_DATA_PATH
 
@@ -40,7 +41,7 @@ delay_uplink_trace_file=$5
 cbr_uplink_trace_file=$6
 downlink_trace_file=$7
 port=$8
-n_parallel=$9
+n_parallel=1
 #tbf_size_bdp=${10}
 
 #attack variables
