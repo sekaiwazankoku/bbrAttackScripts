@@ -64,6 +64,7 @@ cca_choices=('bbr2')
 cca_choices=('genericcc_fast_conv')
 cca_choices=('genericcc_slow_conv_1' 'genericcc_fast_conv')
 cca_choices=('genericcc_slow_conv_1')
+cca_choices=('bbr')
 
 buf_size_bdp_choices=(0.125 0.25 0.5 0.75 1 2 4 8 16 32 64)
 buf_size_bdp_choices=(0.125 0.25)
@@ -95,14 +96,14 @@ pkts_per_ms_choices=(2 4 8)
 # pkts_per_ms_choices=(8)
 pkts_per_ms_choices=(8)
 
-EXPERIMENT="jitter"
-EXPERIMENT="bimodal_jitter"
-EXPERIMENT="aggregation"
-EXPERIMENT="tbf"
+#EXPERIMENT="jitter"
+#EXPERIMENT="bimodal_jitter"
+#EXPERIMENT="aggregation"
+#EXPERIMENT="tbf"
 EXPERIMENT="ideal"
-EXPERIMENT="fullaggregation"
+#EXPERIMENT="fullaggregation"
 
-export n_flows=4
+export n_flows=1
 
 tbf_size_bdp=false
 if [[ $EXPERIMENT == "tbf" ]]; then
@@ -146,7 +147,7 @@ for delay_ms in "${delay_ms_choices[@]}"; do
         fi
         downlink_trace_file=$TRACE_PATH/${pkts_per_ms}ppms.trace
 
-        cmd="$SCRIPT_PATH/run_experiment.sh $pkts_per_ms $delay_ms $buf_size_bdp $cca "
+        cmd="$SCRIPT_PATH/run_experiment.sh $pkts_per_ms $delay_ms $buf_size_bdp $cca " # Need too add "--attack" to test attack scenario
         cmd+="$delay_uplink_trace_file $cbr_uplink_trace_file $downlink_trace_file "
         cmd+="$((start_port + i)) $n_parallel $tbf_size_bdp"
         echo $cmd
