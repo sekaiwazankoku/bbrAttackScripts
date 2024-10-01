@@ -65,6 +65,8 @@ class MahimahiLog:
     df: pd.DataFrame
     summary: Dict[str, Any] = {}
 
+    
+
     arrival_df: pd.DataFrame
     drop_df: pd.DataFrame
     departure_df: pd.DataFrame
@@ -224,6 +226,46 @@ class MahimahiLog:
         self.queue_df = queue_df
         self.inst_tbf = inst_tbf
         self.cum_tbf = cum_tbf
+
+    def compute_queueing_delay(self):
+        """
+        Computes queueing delay for each packet based on enqueue (ARRIVAL) and dequeue (DEPARTURE) events.
+        The difference between dequeue time and enqueue time gives the queueing delay.
+        """
+        # Initialize deque to store enqueue times
+        enqueue_times = deque()
+        # List to store dequeue time and queueing delay for each packet
+        queueing_delay_records = []
+
+        # Iterate over each row in the dataframe
+        for idx, row in self.df.iterrows():
+            if row['event'] == 'ARRIVAL':  # Enqueue (arrival) event
+                enqueue_times.append(row['time'])  # Store enqueue time
+            elif row['event'] == 'DEPARTURE' and enqueue_times:  # Dequeue event
+                # Pop the first enqueue time and calculate queueing delay
+                enqueue_time = enqueue_times.popleft()
+                queueing_delay = row['time'] - enqueue_time
+
+                # Store the dequeue time and queueing delay for plotting
+                queueing_delay_records.append({
+                    'dequeue_time': row['time'],
+                    'queueing_delay': queueing_delay
+                })
+
+        # Convert records into a DataFrame for easier plotting
+        self.queueing_delay_df = pd.DataFrame(queueing_delay_records)
+
+    #Plots the queueing delay as a function of dequeue time:
+    def plot_queueing_delay(self, output_dir):
+        
+        # Ensure queueing delay data is computed
+        if not hasattr(self, 'queueing_delay_df'):
+            self.compute_queueing_delay()
+
+        # Plot the dequeue time vs queueing delay
+        plot_df(self.queueing_delay_df, 'queueing_delay', 
+                os.path.join(output_dir, 'dequeue_vs_queueing_delay.pdf'), 
+                xlabel='Dequeue Time (ms)', ylabel='Queueing Delay (ms)')
 
     def derive_summary_metrics(self):
         SLOW_START_END = 20000
