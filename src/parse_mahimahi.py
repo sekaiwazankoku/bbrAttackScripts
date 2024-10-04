@@ -263,9 +263,9 @@ class MahimahiLog:
             self.compute_queueing_delay()
 
         # Plot the dequeue time vs queueing delay
-        plot_df(self.queueing_delay_df, ykey='queueing_delay_ms', xkey='dequeue_time_ms', 
+        plot_df(self.queueing_delay_df, 'queueing_delay_ms', 
                 os.path.join(output_dir, 'dequeue_vs_queueing_delay.pdf'), 
-                xlabel='Dequeue Time (ms)', ylabel='Queueing Delay (ms)')
+                xkey='dequeue_time_ms', xlabel='Dequeue Time (ms)', ylabel='Queueing Delay (ms)')
 
     def derive_summary_metrics(self):
         SLOW_START_END = 20000
