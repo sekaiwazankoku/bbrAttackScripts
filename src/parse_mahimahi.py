@@ -248,8 +248,8 @@ class MahimahiLog:
 
                 # Store the dequeue time and queueing delay for plotting
                 queueing_delay_records.append({
-                    'dequeue_time': row['time'],
-                    'queueing_delay': queueing_delay
+                    'dequeue_time_ms': row['time'],
+                    'queueing_delay_ms': queueing_delay
                 })
 
         # Convert records into a DataFrame for easier plotting
@@ -263,7 +263,7 @@ class MahimahiLog:
             self.compute_queueing_delay()
 
         # Plot the dequeue time vs queueing delay
-        plot_df(self.queueing_delay_df, 'queueing_delay', 
+        plot_df(self.queueing_delay_df, ykey='queueing_delay_ms', xkey='dequeue_time_ms', 
                 os.path.join(output_dir, 'dequeue_vs_queueing_delay.pdf'), 
                 xlabel='Dequeue Time (ms)', ylabel='Queueing Delay (ms)')
 
