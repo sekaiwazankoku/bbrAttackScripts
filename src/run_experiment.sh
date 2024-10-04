@@ -159,7 +159,7 @@ export exp_tag
 if [[ $attack_flag == true ]]; then
     echo "Running attack scenario"
     mm-delay $delay_ms \
-            mm-bbr-attack $attack_rate $queue_size $delay_budget --uplink-log="$uplink_log_path_delay_box" --attack-log="$attack_log_path" \
+            mm-bbr-attack $attack_rate $queue_size $delay_budget --attack-log="$attack_log_path" \
             $SCRIPT_PATH/bottleneck_box.sh
 
     # Move attack log
