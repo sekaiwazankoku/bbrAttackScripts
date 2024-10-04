@@ -261,9 +261,16 @@ class MahimahiLog:
         # Ensure queueing delay data is computed
         if not hasattr(self, 'queueing_delay_df'):
             self.compute_queueing_delay()
+        
+        if self.queueing_delay_df.empty:
+            print("No queueing delay data available to plot.")
+            return
 
+        # Ensure output directory exists
+        os.makedirs(output_dir, exist_ok=True)
+    
         # Plot the dequeue time vs queueing delay
-        plot_df(self.queueing_delay_df, 'queueing_delay_ms', 
+        plot_df(self.queueing_delay_df, ykey='queueing_delay_ms', 
                 os.path.join(output_dir, 'dequeue_vs_queueing_delay.pdf'), 
                 xkey='dequeue_time_ms', xlabel='Dequeue Time (ms)', ylabel='Queueing Delay (ms)')
 
