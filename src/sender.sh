@@ -10,13 +10,13 @@ SCRIPT=$(realpath "$0")
 SCRIPT_PATH=$(dirname "$SCRIPT")
 EXPERIMENTS_PATH=$(realpath $SCRIPT_PATH/../)
 GENERICCC_PATH=$(realpath $EXPERIMENTS_PATH/../ccas/genericCC)
-
+echo "Before launch_sender"
 launch_sender() {
     duration=$1
     flow_genericcc_logfilepath=$2
     flow_iperf_log_path=$3
     delay=$4
-
+    echo "Beginning of launch sender"
     is_genericcc=false
     if [[ $cca == genericcc_* ]]; then
         is_genericcc=true
@@ -40,6 +40,8 @@ launch_sender() {
             exit 1
         fi
         iperf_cca="bbr"
+        echo "if statement inside the launch_sender: if cca=bbr"
+
     fi
 
     # Sender command
@@ -59,7 +61,11 @@ launch_sender() {
 }
 
 if [[ n_flows -eq 1 ]]; then
+    echo "If n_flows -eq 1 statement"
+
     launch_sender $DURATION $genericcc_logfilepath $iperf_log_path 0
+    wait
+
 else
     for i in $(seq 1 $n_flows); do
         flow_tag="flow[$i]-"
@@ -100,6 +106,7 @@ else
         fi
     done
 fi
+echo "End of sender.sh"
 
 set +u
 set +e
