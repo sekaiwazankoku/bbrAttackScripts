@@ -62,7 +62,6 @@ launch_sender() {
 
 if [[ n_flows -eq 1 ]]; then
     echo "If n_flows -eq 1 statement"
-
     launch_sender $DURATION $genericcc_logfilepath $iperf_log_path 0
     wait
 
