@@ -3,7 +3,7 @@
 set -e
 set -u
 
-DURATION=60  # seconds
+DURATION=120  # seconds
 OVERLAP_DURATION=30  # seconds
 
 SCRIPT=$(realpath "$0")
@@ -58,8 +58,8 @@ launch_sender() {
     eval "$sender_cmd &"
 }
 
-if [[ n_flows == 1 ]]; then
-    launch_sender $DURATION $genericcc_logfilepath $iperf_log_path
+if [[ n_flows -eq 1 ]]; then
+    launch_sender $DURATION $genericcc_logfilepath $iperf_log_path 0
 else
     for i in $(seq 1 $n_flows); do
         flow_tag="flow[$i]-"
