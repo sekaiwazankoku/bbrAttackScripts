@@ -17,8 +17,8 @@ from pubplot import Document
 from plot_config.figure_type_creator import FigureTypeCreator as FTC
 
 ftc = FTC(paper_use_small_font=True, use_markers=False)  # , num_entries=20)
-doc: Document = ftc.get_figure_type()
-ppt: Document = FTC(pub_type='presentation', use_markers=False).get_figure_type()
+doc: Document = ftc.get_figure_type(usetex=False)
+ppt: Document = FTC(pub_type='presentation', use_markers=False).get_figure_type(usetex=False)
 
 
 EVENT_NAME = {
