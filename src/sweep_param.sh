@@ -111,9 +111,9 @@ if [[ $EXPERIMENT == "tbf" ]]; then
 fi
 
 n_parallel=1
-n_parallel=6
-n_parallel=32
-n_parallel=16
+#n_parallel=6
+#n_parallel=32
+#n_parallel=16
 i=0
 exp_pids=()
 for pkts_per_ms in "${pkts_per_ms_choices[@]}"; do
@@ -147,7 +147,7 @@ for delay_ms in "${delay_ms_choices[@]}"; do
         fi
         downlink_trace_file=$TRACE_PATH/${pkts_per_ms}ppms.trace
 
-        cmd="$SCRIPT_PATH/run_experiment.sh $pkts_per_ms $delay_ms $buf_size_bdp $cca " # Need too add "--attack" to test attack scenario
+        cmd="$SCRIPT_PATH/run_experiment.sh --attack $pkts_per_ms $delay_ms $buf_size_bdp $cca " # Need too add "--attack" to test attack scenario
         cmd+="$delay_uplink_trace_file $cbr_uplink_trace_file $downlink_trace_file "
         cmd+="$((start_port + i)) $n_parallel $tbf_size_bdp"
         echo $cmd
