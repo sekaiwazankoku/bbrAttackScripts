@@ -4,6 +4,7 @@ import argparse
 import pprint
 from typing import Any, Dict
 import matplotlib
+from collections import deque
 
 import numpy as np
 import pandas as pd
@@ -239,8 +240,12 @@ class MahimahiLog:
 
         # Iterate over each row in the dataframe
         for idx, row in self.df.iterrows():
+            #print(f"Processing event: {row['event']} at time {row['time']}")
+
             if row['event'] == 'ARRIVAL':  # Enqueue (arrival) event
                 enqueue_times.append(row['time'])  # Store enqueue time
+                #print(f"Enqueue event at {row['time']}")
+                
             elif row['event'] == 'DEPARTURE' and enqueue_times:  # Dequeue event
                 # Pop the first enqueue time and calculate queueing delay
                 enqueue_time = enqueue_times.popleft()
@@ -254,11 +259,13 @@ class MahimahiLog:
 
         # Convert records into a DataFrame for easier plotting
         self.queueing_delay_df = pd.DataFrame(queueing_delay_records)
+        #print("Dataframe created for dequeue-queuing_delay plot")
+        #print(self.queueing_delay_df)
 
-    #Plots the queueing delay as a function of dequeue time:
+   
     def plot_queueing_delay(self, output_dir):
         
-        # Ensure queueing delay data is computed
+         # Ensure queueing delay data is computed
         if not hasattr(self, 'queueing_delay_df'):
             self.compute_queueing_delay()
         
@@ -270,9 +277,11 @@ class MahimahiLog:
         os.makedirs(output_dir, exist_ok=True)
     
         # Plot the dequeue time vs queueing delay
-        plot_df(self.queueing_delay_df, ykey='queueing_delay_ms', 
+        plot_df(self.queueing_delay_df, 'queueing_delay_ms', 
                 os.path.join(output_dir, 'dequeue_vs_queueing_delay.pdf'), 
                 xkey='dequeue_time_ms', xlabel='Dequeue Time (ms)', ylabel='Queueing Delay (ms)')
+
+       
 
     def derive_summary_metrics(self):
         SLOW_START_END = 20000
@@ -317,6 +326,8 @@ class MahimahiLog:
 def plot_single_exp(fpath, output_dir):
 
     ml = MahimahiLog(fpath)
+
+    ml.plot_queueing_delay(output_dir)
 
     # import ipdb; ipdb.set_trace()
     arrival_df = ml.arrival_df
